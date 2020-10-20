@@ -1,0 +1,28 @@
+{
+  "name": "kplug",
+  "version": "0.0.7",
+  "description": "A sample for a new cordova plugin",
+  "cordova": {
+    "id": "kplug",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/don/cordova-plugin-hello.git"
+  },
+  "keywords": [
+    "cordova",
+    "plugin",
+    "kplug",
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Mallumo",
+  "license": "Apache-2",
+  "bugs": {
+    "url": "https://github.com/don/cordova-plugin-hello/issues"
+  },
+  "homepage": "https://github.com/don/cordova-plugin-hello#readme"
+}

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+        id="tk.mallumo.cordova.kplug"
+        version="0.0.7">
+
+  <name>KPlug</name>
+
+  <engines>
+    <engine name="cordova" version=">=9.0.0"/>
+  </engines>
+
+  <asset src="www/kplug.js" target="js/kplug.js"/>
+
+  <js-module src="www/kplug.js" name="kplug">
+    <clobbers target="kplug" />
+  </js-module>
+
+  <platform name="android"  kotlin="1.4.10">
+        
+    <config-file target="AndroidManifest.xml" parent="/*">
+       <uses-permission android:name="android.permission.INTERNET" />
+       <uses-permission android:name="android.permission.RECORD_AUDIO" />
+       <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    </config-file> 
+    
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+       
+       <service android:name="tk.mallumo.cordova.kplug.ServiceSTT"/>
+       
+       <receiver android:name="tk.mallumo.cordova.kplug.KPluginBroadcast"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+            </intent-filter>
+        </receiver>
+    </config-file>
+    
+    
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="KPlug">
+        <param name="android-package" value="tk.mallumo.cordova.kplug.KPlug"/>
+      </feature>
+    </config-file>
+    
+    <source-file src="src/android/KPlug.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
+    
+    <framework src="kplug.gradle" custom="true" type="gradleReference" />
+  </platform>
+</plugin>
