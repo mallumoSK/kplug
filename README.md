@@ -29,30 +29,30 @@ In config:
 chrome://inspect/#devices
 
 ## Test of working
-```
+```js
 kplug.greet("World",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
 ## 1. Speech to text
 ### 1.1. START
-```
+```js
 kplug.stt({
 	preferOffline: false,
 	maxResults: 10	
 	},function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 ### 1.2. STOP
-```
-kplug.sttStop(function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+```js
+kplug.sttStop()
 ```
 ### 1.3. STOP IMMEDIATELY
-```
-kplug.sttStopForce(function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+```js
+kplug.sttStopForce()
 ```
 
 ## 2. Notification scheduler
 ### 2.1 Schedule
-```
+```js
 kplug.schedule({
 	id: 'some-unique-identifier',
 	channel: 'name-of-notification-channel',
@@ -100,6 +100,7 @@ kplug.schedule({
 ```
 
 ### 2.2 Stop schedule
-```
+```js
 kplug.scheduleCancel("some-unique-identifier",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
+
