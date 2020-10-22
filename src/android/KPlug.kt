@@ -57,14 +57,14 @@ open class KPlug : CordovaPlugin() {
                     true
                 }
                 "sttStop" -> {
-                    registerSttPluginCallback(callbackContext)
+                    callbackContext?.success()
                     validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
                         ServiceSTT.stop()
                     }
                     true
                 }
                 "sttStopForce" -> {
-                    registerSttPluginCallback(callbackContext)
+                    callbackContext?.success()
                     validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
                         ServiceSTT.stop(true)
                     }

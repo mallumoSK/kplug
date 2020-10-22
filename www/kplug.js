@@ -17,10 +17,10 @@ module.exports.stt = function (data, successCallback, errorCallback) {
         cordova.exec(successCallback, errorCallback, "KPlug", "stt", [data]);
 }
 
-module.exports.sttStop = function (successCallback, errorCallback) {
-        cordova.exec(successCallback, errorCallback, "KPlug", "sttStop", [0]);
+module.exports.sttStop = function () {
+        cordova.exec(function(resp){}, function(err){}, "KPlug", "sttStop", [0]);
 }
 
-module.exports.sttStopForce = function (successCallback, errorCallback) {
-        cordova.exec(successCallback, errorCallback, "KPlug", "sttStopForce", [0]);
+module.exports.sttStopForce = function () {
+        cordova.exec(function(resp){}, function(err){}, "KPlug", "sttStopForce", [0]);
 }
