@@ -1,9 +1,18 @@
 def work_manager_version = "2.4.0"
 def gson_version = "2.8.6"
+def log_version = "8.3.0"
+
+repositories {
+    maven {
+        url = uri("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
+    }
+}
+
 dependencies {
+    implementation "tk.mallumo:log:$log_version"
     implementation "androidx.work:work-runtime-ktx:$work_manager_version"
     implementation "com.google.code.gson:gson:$gson_version"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
-     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
 }

@@ -153,10 +153,7 @@ open class SttPlugBG : CordovaPlugin() {
     }
 }
 
-data class SttDataHolder(var preferOffline: Boolean = false, var maxResults: Int = 10)
 
-
-private val atomicRequestCode = AtomicInteger(100)
 
 
 

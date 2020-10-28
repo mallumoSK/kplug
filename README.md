@@ -36,7 +36,8 @@ kplug.greet("World",function(resp){console.log(resp)},function(err){console.log(
 sttBG.greet("World",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
-## 1. Speech to text
+## 1. Speech to text BG
+Recognition is running on service
 ### 1.1. START
 ```js
 sttBG.start({
@@ -53,8 +54,38 @@ sttBG.stop()
 sttBG.stopForce()
 ```
 
-## 2. Notification scheduler
-### 2.1 Schedule
+## 2. Speech to text FG
+Recognition is running inside dialog
+### 2.1. START
+```js
+sttFG.start({
+	preferOffline: false,
+	autoContinue: true	
+	},function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+```
+Parameter **autoContinue** 
+* **true** recognition is running nonstop until 
+	* stop function is called 
+	* app going to background 
+	* error not in ERROR_NO_MATCH(7) , ERROR_SPEECH_TIMEOUT(6)
+* **false** recognition is running 
+	* until recognizing service invoke autoclese
+	* app going to background 
+	* any error
+
+
+### 2.2. STOP
+```js
+sttFG.stop()
+```
+### 2.3. TEXT EXTRA
+put text into dialog
+```js
+sttFG.text('123642845874')
+```
+
+## 3. Notification scheduler
+### 3.1 Schedule
 ```js
 kplug.schedule({
 	id: 'some-unique-identifier',
@@ -102,7 +133,7 @@ kplug.schedule({
 },function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
-### 2.2 Stop schedule
+### 3.2 Stop schedule
 ```js
 kplug.scheduleCancel("some-unique-identifier",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
