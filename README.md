@@ -23,6 +23,7 @@ In config:
 <preference name="GradlePluginKotlinEnabled" value="true" />
 <preference name="GradlePluginKotlinCodeStyle" value="official" />
 <preference name="GradlePluginKotlinVersion" value="1.4.10" />
+<preference name="AndroidXEnabled" value="true" />
 ```
 
 ##### chrome inspect window 
@@ -31,23 +32,25 @@ chrome://inspect/#devices
 ## Test of working
 ```js
 kplug.greet("World",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+
+sttBG.greet("World",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
 ## 1. Speech to text
 ### 1.1. START
 ```js
-kplug.stt({
+sttBG.start({
 	preferOffline: false,
 	maxResults: 10	
 	},function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 ### 1.2. STOP
 ```js
-kplug.sttStop()
+sttBG.stop()
 ```
 ### 1.3. STOP IMMEDIATELY
 ```js
-kplug.sttStopForce()
+sttBG.stopForce()
 ```
 
 ## 2. Notification scheduler

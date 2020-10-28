@@ -1,7 +1,7 @@
 {
   "name": "kplug",
-  "version": "0.0.8",
-  "description": "Bunch of cordova utils"
+  "version": "0.1.0",
+  "description": "Bunch of cordova utils",
   "cordova": {
     "id": "kplug",
     "platforms": [

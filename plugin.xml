@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         id="tk.mallumo.cordova.kplug"
-        version="0.0.8">
+        version="0.1.0">
 
   <name>KPlug</name>
 
@@ -10,11 +10,16 @@
   </engines>
 
   <asset src="www/kplug.js" target="js/kplug.js"/>
+  <asset src="www/sttPlugBG.js" target="js/sttPlugBG.js"/>
 
   <js-module src="www/kplug.js" name="kplug">
     <clobbers target="kplug" />
   </js-module>
-
+  
+  <js-module src="www/sttPlugBG.js" name="sttBG">
+    <clobbers target="sttBG" />
+  </js-module>
+  
   <platform name="android"  kotlin="1.4.10">
         
     <config-file target="AndroidManifest.xml" parent="/*">
@@ -25,7 +30,7 @@
     
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
        
-       <service android:name="tk.mallumo.cordova.kplug.ServiceSTT"/>
+       <service android:name="tk.mallumo.cordova.kplug.stt.ServiceSTT"/>
        
        <receiver android:name="tk.mallumo.cordova.kplug.KPluginBroadcast"
             android:exported="true"
@@ -41,9 +46,16 @@
       <feature name="KPlug">
         <param name="android-package" value="tk.mallumo.cordova.kplug.KPlug"/>
       </feature>
+      <feature name="SttPlugBG">
+        <param name="android-package" value="tk.mallumo.cordova.kplug.stt.SttPlugBG"/>
+      </feature>
     </config-file>
     
     <source-file src="src/android/KPlug.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
+    <source-file src="src/android/ext.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
+    <!-- -->
+    <source-file src="src/android/stt/ServiceSTT.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>
+    <source-file src="src/android/stt/SttPlugBG.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>
     
     <framework src="kplug.gradle" custom="true" type="gradleReference" />
   </platform>
