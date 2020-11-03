@@ -15,3 +15,7 @@ module.exports.stop = function () {
 module.exports.text = function (text, successCallback, errorCallback) {
         cordova.exec(successCallback, errorCallback, "SttPlugFG", "text", [text]);
 }
+
+module.exports.color = function (button, animation, successCallback, errorCallback) {
+        cordova.exec(successCallback, errorCallback, "SttPlugFG", "color", [button, animation]);
+}

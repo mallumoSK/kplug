@@ -1,27 +1,27 @@
 package tk.mallumo.cordova.kplug.stt
 
-import android.R
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.text.Html
+import android.text.Spanned
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.annotation.Px
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
@@ -38,11 +38,11 @@ import tk.mallumo.cordova.kplug.fromJson
 import tk.mallumo.cordova.kplug.toJson
 
 
-private fun View.sp(value: Int) = TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_SP,
-    value.toFloat(),
-    context.resources.displayMetrics
-)
+//private fun View.sp(value: Int) = TypedValue.applyDimension(
+//    TypedValue.COMPLEX_UNIT_SP,
+//    value.toFloat(),
+//    context.resources.displayMetrics
+//)
 
 private fun View.dp(value: Int) = TypedValue.applyDimension(
     TypedValue.COMPLEX_UNIT_DIP,
@@ -50,12 +50,12 @@ private fun View.dp(value: Int) = TypedValue.applyDimension(
     context.resources.displayMetrics
 ).toInt()
 
-@Px
-private fun View.px(value: Int) = TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_PX,
-    value.toFloat(),
-    context.resources.displayMetrics
-).toInt()
+//@Px
+//private fun View.px(value: Int) = TypedValue.applyDimension(
+//    TypedValue.COMPLEX_UNIT_PX,
+//    value.toFloat(),
+//    context.resources.displayMetrics
+//).toInt()
 
 @ExperimentalCoroutinesApi
 class SttDialog(
@@ -73,7 +73,11 @@ class SttDialog(
     private var isClosing = false
 
     private val title = MutableStateFlow("")
-    private val textExtra = MutableStateFlow("")
+    private val buttonColor = MutableStateFlow("#C7C7C7")
+    private val animColor = MutableStateFlow("#EEEEEE")
+    private val animScale = MutableStateFlow(0F)
+
+    //    private val textExtra = MutableStateFlow("")
     private val closeDialog = MutableStateFlow(false)
 
     private fun <T> flow(flow: Flow<T>, body: (T) -> Unit) {
@@ -94,7 +98,12 @@ class SttDialog(
         }
 
         fun text(value: String) {
-            instance?.textExtra?.value = value
+            instance?.title?.value = value
+        }
+
+        fun color(buttonColor: String, animColor: String) {
+            instance?.buttonColor?.value = buttonColor
+            instance?.animColor?.value = animColor
         }
     }
 
@@ -116,78 +125,77 @@ class SttDialog(
 
     fun show(): SttDialog {
         instance = this
-        title.value = "Initializing"
         activity.runOnUiThread {
-            val themeWrapper =  ContextThemeWrapper(
+            val themeWrapper = ContextThemeWrapper(
                 activity,
-                R.style.Theme_DeviceDefault_Light_DialogWhenLarge
+                android.R.style.Theme_DeviceDefault_Light_DialogWhenLarge
             )
             val dialog = AlertDialog.Builder(themeWrapper)
                 .setCancelable(false)
                 .setView(
                     LinearLayout(activity).apply {
-
                         orientation = LinearLayout.VERTICAL
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         )
                         dp(20).also { dp20 ->
-//                            setPadding(0, 0, 0, dp20)
+                            setPadding(0, 0, 0, dp20)
                         }
-                        addView(TextView(context).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            )
-                            gravity = Gravity.CENTER_HORIZONTAL
-                            textSize = sp(18)
-                            dp(20).also { dp20 ->
-                                setPadding(dp20, dp20, dp20, dp20)
-                            }
-                            typeface = Typeface.DEFAULT_BOLD
-                            setTextColor(Color.BLACK)
+                        titleTextView {
+                            flow(title) { text = it.asHtml() }
+                        }
 
-                            flow(title) { text = it }
-                        })
-                        addView(ImageView(context).apply {
-                            dp(80).also {
+                        addView(FrameLayout(context).apply {
+                            dp(120).also {
                                 layoutParams = ViewGroup.LayoutParams(it, it)
                             }
-                            dp(8).also {
-                                setPadding(it, it, it, it)
-                            }
                             gravity = Gravity.CENTER_HORIZONTAL
-                            background = GradientDrawable().apply {
-                                color = ColorStateList.valueOf(Color.BLUE)
-                                shape = GradientDrawable.OVAL
-                            }
-                            setImageResource(R.drawable.ic_btn_speak_now)
-                            imageTintList = ColorStateList.valueOf(Color.WHITE)
-                            setOnClickListener {
-                                sendInfo(
-                                    ServiceSTT.RecognitionInfo(
-                                        ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
-                                        listOf(recognized),
-                                        recognized
-                                    )
-                                )
-                                closeDialog()
-                            }
-                        })
-                        addView(TextView(context).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            )
-                            gravity = Gravity.CENTER_HORIZONTAL
-                            textSize = sp(12)
-                            dp(20).also { dp20 ->
-                                setPadding(dp20/2, dp20, dp20/2, dp20)
-                            }
-                            setTextColor(Color.BLACK)
 
-                            flow(textExtra) { text = it }
+                            animView {
+                                flow(animColor) {
+                                    background = GradientDrawable().apply {
+                                        shape = GradientDrawable.OVAL
+                                        color = try {
+                                            ColorStateList.valueOf(Color.parseColor(it))
+                                        } catch (e: Exception) {
+                                            ColorStateList.valueOf(Color.YELLOW)
+                                        }
+                                    }
+                                }
+                                flow(animScale) {
+                                    val factor = if (it <= 0) 1F
+                                    else {
+                                        ((minOf(it, 12F) / 0.12F) / 180F) + 1F
+                                    }
+                                    scaleX = factor
+                                    scaleY = factor
+
+                                }
+                            }
+                            cancelButton {
+                                flow(buttonColor) {
+                                    background = GradientDrawable().apply {
+                                        shape = GradientDrawable.OVAL
+                                        color = try {
+                                            ColorStateList.valueOf(Color.parseColor(it))
+                                        } catch (e: Exception) {
+                                            ColorStateList.valueOf(Color.GREEN)
+                                        }
+
+                                    }
+                                }
+                                setOnClickListener {
+                                    sendInfo(
+                                        ServiceSTT.RecognitionInfo(
+                                            ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
+                                            listOf(recognized),
+                                            recognized
+                                        )
+                                    )
+                                    closeDialog()
+                                }
+                            }
                         })
                     })
                 .show()
@@ -211,7 +219,7 @@ class SttDialog(
     }
 
     private fun startRecognization() {
-        title.value = "Initializing"
+//        title.value = "Initializing"
         if (!isClosing) activity.runOnUiThread {
             recognizer.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, activity.packageName)
@@ -235,7 +243,7 @@ class SttDialog(
                 setRecognitionListener(object : RecognitionListener {
 
                     override fun onReadyForSpeech(params: Bundle?) {
-                        title.value = "Počúvam"
+//                        title.value = "Počúvam"
                         sendInfo(ServiceSTT.RecognitionInfo(ServiceSTT.RecognitionInfo.State.READY))
                     }
 
@@ -243,7 +251,8 @@ class SttDialog(
                     }
 
                     override fun onRmsChanged(rmsdB: Float) {
-
+//                        Log.e("rmsdB", rmsdB.toString())
+                        animScale.value = rmsdB
                     }
 
                     override fun onBufferReceived(buffer: ByteArray?) {
@@ -254,7 +263,7 @@ class SttDialog(
                     }
 
                     override fun onError(error: Int) {
-                        if (isClosing == false && sttDataHolder.autoContinue && error in arrayOf(
+                        if (!isClosing && sttDataHolder.autoContinue && error in arrayOf(
                                 SpeechRecognizer.ERROR_NO_MATCH,
                                 SpeechRecognizer.ERROR_SPEECH_TIMEOUT
                             )
@@ -289,7 +298,7 @@ class SttDialog(
                             )
                         )
 
-                        if (sttDataHolder.autoContinue && isClosing == false) {
+                        if (sttDataHolder.autoContinue && !isClosing) {
                             cachedResult = out
                             reinitDialog()
                         } else {
@@ -302,7 +311,7 @@ class SttDialog(
                             (partialResults?.getStringArrayList("results_recognition")?.first()
                                 ?: "")
                                 .let { "$cachedResult $it".trim() }
-                        recognized =out
+                        recognized = out
                         sendInfo(
                             ServiceSTT.RecognitionInfo(
                                 ServiceSTT.RecognitionInfo.State.RESULT_PARTIAL,
@@ -333,8 +342,56 @@ class SttDialog(
     }
 
 
+    private fun FrameLayout.cancelButton(body: ImageView.() -> Unit = {}) {
+        addView(ImageView(context).apply {
+            dp(80).also {
+                layoutParams = FrameLayout.LayoutParams(it, it).apply {
+                    gravity = Gravity.CENTER
+                }
+            }
+            setImageResource(android.R.drawable.ic_btn_speak_now)
+            imageTintList = ColorStateList.valueOf(Color.WHITE)
+            body(this)
+        })
+    }
+
+    private fun FrameLayout.animView(body: View.() -> Unit = {}) {
+        addView(ImageView(context).apply {
+            dp(80).also {
+                layoutParams = FrameLayout.LayoutParams(it, it).apply {
+                    gravity = Gravity.CENTER
+                }
+                pivotX = it.toFloat() / 2F
+                pivotY = it.toFloat() / 2F
+            }
+            body(this)
+        })
+    }
+
+
+    private fun LinearLayout.titleTextView(body: TextView.() -> Unit = {}) {
+        addView(TextView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            gravity = Gravity.CENTER_HORIZONTAL
+            dp(20).also { dp20 ->
+                setPadding(dp20, dp20, dp20, 0)
+            }
+            body(this)
+        })
+    }
 }
 
+
+private fun String.asHtml(): Spanned =
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        Html.fromHtml(this, Html.FROM_HTML_MODE_COMPACT)
+    } else {
+        @Suppress("DEPRECATION")
+        Html.fromHtml(this)
+    }
 
 @ExperimentalCoroutinesApi
 open class SttPlugFG : CordovaPlugin() {
@@ -370,7 +427,18 @@ open class SttPlugFG : CordovaPlugin() {
                     if (!SttDialog.isActive()) {
                         callbackContext?.error("Is not active")
                     } else {
-                        SttDialog.text(args?.getString(0)?:"")
+                        SttDialog.text(args?.getString(0) ?: "")
+                    }
+                    true
+                }
+                "color" -> {
+                    if (!SttDialog.isActive()) {
+                        callbackContext?.error("Is not active")
+                    } else {
+                        SttDialog.color(
+                            args?.getString(0) ?: "#C7C7C7",
+                            args?.getString(1) ?: "#EEEEEE"
+                        )
                     }
                     true
                 }
@@ -443,6 +511,8 @@ open class SttPlugFG : CordovaPlugin() {
         super.onStop()
     }
 }
+
+
 
 
 

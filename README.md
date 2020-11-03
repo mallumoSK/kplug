@@ -12,6 +12,8 @@ cordova build
 
 #cordova plugin remove tk.mallumo.cordova.kplug
 cordova plugin add ../kplug
+
+chrome://inspect/#devices
 ```
 
 ## Cordova requirments
@@ -78,12 +80,17 @@ Parameter **autoContinue**
 ```js
 sttFG.stop()
 ```
-### 2.3. TEXT EXTRA
-put text into dialog
+### 2.3. TITLE TEXT
+put title text into dialog 
 ```js
-sttFG.text('123642845874')
+sttFG.text('<h1><font color="#009688">123642845874</font></h1>')
 ```
 
+### 2.4. Colors
+Change color of button background and animation flow
+```js
+sttFG.color('#009688','#e0f2f1')
+```
 ## 3. Notification scheduler
 ### 3.1 Schedule
 ```js
