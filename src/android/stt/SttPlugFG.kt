@@ -1,7 +1,7 @@
 package tk.mallumo.cordova.kplug.stt
 
 import android.app.Activity
-import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -14,7 +14,6 @@ import android.speech.SpeechRecognizer
 import android.text.Html
 import android.text.Spanned
 import android.util.TypedValue
-import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -34,34 +33,22 @@ import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.PluginResult
 import org.json.JSONArray
 import org.json.JSONObject
+import tk.mallumo.cordova.kplug.BottomDialog
+import tk.mallumo.cordova.kplug.dp
 import tk.mallumo.cordova.kplug.fromJson
 import tk.mallumo.cordova.kplug.toJson
 
 
-//private fun View.sp(value: Int) = TypedValue.applyDimension(
-//    TypedValue.COMPLEX_UNIT_SP,
-//    value.toFloat(),
-//    context.resources.displayMetrics
-//)
 
-private fun View.dp(value: Int) = TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_DIP,
-    value.toFloat(),
-    context.resources.displayMetrics
-).toInt()
 
-//@Px
-//private fun View.px(value: Int) = TypedValue.applyDimension(
-//    TypedValue.COMPLEX_UNIT_PX,
-//    value.toFloat(),
-//    context.resources.displayMetrics
-//).toInt()
+
+
 
 @ExperimentalCoroutinesApi
 class SttDialog(
-    val activity: Activity,
-    val callbackContext: CallbackContext?,
-    val sttDataHolder: SttDataHolder
+        val activity: Activity,
+        val callbackContext: CallbackContext?,
+        val sttDataHolder: SttDataHolder
 ) {
     private val dialogScope = MainScope()
 
@@ -117,28 +104,39 @@ class SttDialog(
         instance = null
 
         sendInfo(
-            ServiceSTT.RecognitionInfo(
-                ServiceSTT.RecognitionInfo.State.DESTROYED,
-            )
+                ServiceSTT.RecognitionInfo(
+                        ServiceSTT.RecognitionInfo.State.DESTROYED,
+                )
         )
     }
 
     fun show(): SttDialog {
         instance = this
         activity.runOnUiThread {
-            val themeWrapper = ContextThemeWrapper(
-                activity,
-                android.R.style.Theme_DeviceDefault_Light_DialogWhenLarge
-            )
-            val dialog = AlertDialog.Builder(themeWrapper)
-                .setCancelable(false)
-                .setView(
-                    LinearLayout(activity).apply {
+
+            val bottomDialog = object : BottomDialog(activity) {
+
+                override fun peekHeight(): Int = context.dp(260)
+
+                override fun onDismiss() {
+                    sendInfo(
+                            ServiceSTT.RecognitionInfo(
+                                    ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
+                                    listOf(recognized),
+                                    recognized
+                            )
+                    )
+                    closeDialog()
+                }
+
+                override fun getContentView(): View {
+                    return LinearLayout(activity).apply {
                         orientation = LinearLayout.VERTICAL
                         layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                dp(260)
                         )
+                        setBackgroundColor(Color.WHITE)
                         dp(20).also { dp20 ->
                             setPadding(0, 0, 0, dp20)
                         }
@@ -166,7 +164,7 @@ class SttDialog(
                                 flow(animScale) {
                                     val factor = if (it <= 0) 1F
                                     else {
-                                        ((minOf(it, 12F) / 0.12F) / 180F) + 1F
+                                        ((minOf(it, 12F) / 0.12F) / 200F) + 1F
                                     }
                                     scaleX = factor
                                     scaleY = factor
@@ -187,20 +185,29 @@ class SttDialog(
                                 }
                                 setOnClickListener {
                                     sendInfo(
-                                        ServiceSTT.RecognitionInfo(
-                                            ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
-                                            listOf(recognized),
-                                            recognized
-                                        )
+                                            ServiceSTT.RecognitionInfo(
+                                                    ServiceSTT.RecognitionInfo.State.BUTTON,
+                                                    listOf(recognized),
+                                                    recognized
+                                            )
+                                    )
+                                    sendInfo(
+                                            ServiceSTT.RecognitionInfo(
+                                                    ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
+                                                    listOf(recognized),
+                                                    recognized
+                                            )
                                     )
                                     closeDialog()
                                 }
                             }
                         })
-                    })
-                .show()
+                    }
+                }
+            }
 
-            flow(closeDialog) { if (it) dialog.dismiss() }
+            bottomDialog.show()
+            flow(closeDialog) { if (it) bottomDialog.dismiss() }
         }
         callbackContext?.sendPluginResult(PluginResult(PluginResult.Status.OK).apply {
             keepCallback = true
@@ -224,8 +231,8 @@ class SttDialog(
             recognizer.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, activity.packageName)
                 putExtra(
-                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                        RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
                 )
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                     putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, sttDataHolder.preferOffline)
@@ -249,10 +256,14 @@ class SttDialog(
 
                     override fun onBeginningOfSpeech() {
                     }
-
+                    var rmsCounter = 0
                     override fun onRmsChanged(rmsdB: Float) {
-//                        Log.e("rmsdB", rmsdB.toString())
-                        animScale.value = rmsdB
+                        rmsCounter+=1
+                        if(rmsCounter>3){
+                            animScale.value = rmsdB
+                            rmsCounter= 0
+                        }
+
                     }
 
                     override fun onBufferReceived(buffer: ByteArray?) {
@@ -264,17 +275,17 @@ class SttDialog(
 
                     override fun onError(error: Int) {
                         if (!isClosing && sttDataHolder.autoContinue && error in arrayOf(
-                                SpeechRecognizer.ERROR_NO_MATCH,
-                                SpeechRecognizer.ERROR_SPEECH_TIMEOUT
-                            )
+                                        SpeechRecognizer.ERROR_NO_MATCH,
+                                        SpeechRecognizer.ERROR_SPEECH_TIMEOUT
+                                )
                         ) {
                             reinitDialog()
                         } else {
                             sendInfo(
-                                ServiceSTT.RecognitionInfo(
-                                    ServiceSTT.RecognitionInfo.State.ERROR,
-                                    error = error
-                                )
+                                    ServiceSTT.RecognitionInfo(
+                                            ServiceSTT.RecognitionInfo.State.ERROR,
+                                            error = error
+                                    )
                             )
                             closeDialog()
                         }
@@ -282,20 +293,20 @@ class SttDialog(
 
                     override fun onResults(results: Bundle?) {
                         val out =
-                            (results?.getStringArrayList("results_recognition")?.first() ?: "")
-                                .let { "$cachedResult $it".trim() }
+                                (results?.getStringArrayList("results_recognition")?.first() ?: "")
+                                        .let { "$cachedResult $it".trim() }
 
                         val state =
-                            if (sttDataHolder.autoContinue) ServiceSTT.RecognitionInfo.State.RESULT_PARTIAL
-                            else ServiceSTT.RecognitionInfo.State.RESULT_FINAL
+                                if (sttDataHolder.autoContinue) ServiceSTT.RecognitionInfo.State.RESULT_PARTIAL
+                                else ServiceSTT.RecognitionInfo.State.RESULT_FINAL
 
 
                         sendInfo(
-                            ServiceSTT.RecognitionInfo(
-                                state,
-                                listOf(out),
-                                out
-                            )
+                                ServiceSTT.RecognitionInfo(
+                                        state,
+                                        listOf(out),
+                                        out
+                                )
                         )
 
                         if (sttDataHolder.autoContinue && !isClosing) {
@@ -308,18 +319,18 @@ class SttDialog(
 
                     override fun onPartialResults(partialResults: Bundle?) {
                         val out =
-                            (partialResults?.getStringArrayList("results_recognition")?.first()
-                                ?: "")
-                                .let { "$cachedResult $it".trim() }
+                                (partialResults?.getStringArrayList("results_recognition")?.first()
+                                        ?: "")
+                                        .let { "$cachedResult $it".trim() }
                         recognized = out
                         sendInfo(
-                            ServiceSTT.RecognitionInfo(
-                                ServiceSTT.RecognitionInfo.State.RESULT_PARTIAL,
-                                listOf(out),
-                                partialResults
-                                    ?.getStringArrayList("android.speech.extra.UNSTABLE_TEXT")
-                                    ?.firstOrNull() ?: ""
-                            )
+                                ServiceSTT.RecognitionInfo(
+                                        ServiceSTT.RecognitionInfo.State.RESULT_PARTIAL,
+                                        listOf(out),
+                                        partialResults
+                                                ?.getStringArrayList("android.speech.extra.UNSTABLE_TEXT")
+                                                ?.firstOrNull() ?: ""
+                                )
                         )
                     }
 
@@ -333,12 +344,12 @@ class SttDialog(
 
     private fun sendInfo(recognitionInfo: ServiceSTT.RecognitionInfo) {
         callbackContext?.sendPluginResult(
-            PluginResult(
-                PluginResult.Status.OK,
-                JSONObject(recognitionInfo.toJson())
-            ).apply {
-                keepCallback = recognitionInfo.state != ServiceSTT.RecognitionInfo.State.DESTROYED
-            })
+                PluginResult(
+                        PluginResult.Status.OK,
+                        JSONObject(recognitionInfo.toJson())
+                ).apply {
+                    keepCallback = recognitionInfo.state != ServiceSTT.RecognitionInfo.State.DESTROYED
+                })
     }
 
 
@@ -371,13 +382,14 @@ class SttDialog(
 
     private fun LinearLayout.titleTextView(body: TextView.() -> Unit = {}) {
         addView(TextView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+            layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    dp(120)
             )
-            gravity = Gravity.CENTER_HORIZONTAL
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            gravity = Gravity.CENTER
             dp(20).also { dp20 ->
-                setPadding(dp20, dp20, dp20, 0)
+                setPadding(dp20, 0, dp20, 0)
             }
             body(this)
         })
@@ -386,20 +398,20 @@ class SttDialog(
 
 
 private fun String.asHtml(): Spanned =
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-        Html.fromHtml(this, Html.FROM_HTML_MODE_COMPACT)
-    } else {
-        @Suppress("DEPRECATION")
-        Html.fromHtml(this)
-    }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            Html.fromHtml(this, Html.FROM_HTML_MODE_COMPACT)
+        } else {
+            @Suppress("DEPRECATION")
+            Html.fromHtml(this)
+        }
 
 @ExperimentalCoroutinesApi
 open class SttPlugFG : CordovaPlugin() {
 
     override fun execute(
-        action: String?,
-        args: JSONArray?,
-        callbackContext: CallbackContext?
+            action: String?,
+            args: JSONArray?,
+            callbackContext: CallbackContext?
     ): Boolean {
         try {
             return when (action) {
@@ -409,11 +421,11 @@ open class SttPlugFG : CordovaPlugin() {
                     } else {
                         validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
                             SttDialog(
-                                activity = cordova.activity,
-                                callbackContext = callbackContext,
-                                sttDataHolder = args?.getJSONObject(0)
-                                    ?.fromJson()
-                                    ?: SttDataHolder()
+                                    activity = cordova.activity,
+                                    callbackContext = callbackContext,
+                                    sttDataHolder = args?.getJSONObject(0)
+                                            ?.fromJson()
+                                            ?: SttDataHolder()
                             ).show()
                         }
                     }
@@ -436,8 +448,8 @@ open class SttPlugFG : CordovaPlugin() {
                         callbackContext?.error("Is not active")
                     } else {
                         SttDialog.color(
-                            args?.getString(0) ?: "#C7C7C7",
-                            args?.getString(1) ?: "#EEEEEE"
+                                args?.getString(0) ?: "#C7C7C7",
+                                args?.getString(1) ?: "#EEEEEE"
                         )
                     }
                     true
@@ -471,9 +483,9 @@ open class SttPlugFG : CordovaPlugin() {
 
     @Suppress("SameParameterValue")
     private fun validatePermission(
-        cordovaCallback: CallbackContext?,
-        vararg permissions: String,
-        task: () -> Unit
+            cordovaCallback: CallbackContext?,
+            vararg permissions: String,
+            task: () -> Unit
     ) {
         if (permissions.all { cordova.hasPermission(it) }) {
             task.invoke()
@@ -485,9 +497,9 @@ open class SttPlugFG : CordovaPlugin() {
     }
 
     override fun onRequestPermissionResult(
-        requestCode: Int,
-        permissions: Array<out String>?,
-        grantResults: IntArray?
+            requestCode: Int,
+            permissions: Array<out String>?,
+            grantResults: IntArray?
     ) {
         if (requestCode == permissionRC) {
             if (grantResults?.all { it == PackageManager.PERMISSION_GRANTED } == true) {
@@ -496,7 +508,7 @@ open class SttPlugFG : CordovaPlugin() {
                 cordovaTaskCallback = null
             } else {
                 cordovaTaskCallback?.sendPluginResult(
-                    PluginResult(PluginResult.Status.ERROR)
+                        PluginResult(PluginResult.Status.ERROR)
                 )
                 cordovaTask = {}
                 cordovaTaskCallback = null
@@ -511,7 +523,6 @@ open class SttPlugFG : CordovaPlugin() {
         super.onStop()
     }
 }
-
 
 
 

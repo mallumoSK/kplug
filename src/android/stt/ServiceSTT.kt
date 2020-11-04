@@ -204,6 +204,7 @@ class ServiceSTT : Service() {
             READY,
             RESULT_PARTIAL,
             RESULT_FINAL,
+            BUTTON,
             DESTROYED
         }
     }
