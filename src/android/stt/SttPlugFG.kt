@@ -386,9 +386,9 @@ class SttDialog(
                 layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT)
-//                dp(20).also { dp20 ->
-//                    setPadding(dp20, 0, dp20, 0)
-//                }
+                dp(20).also { dp20 ->
+                    setPadding(dp20, dp20, dp20, 0)
+                }
                 body(this)
             })
         })
