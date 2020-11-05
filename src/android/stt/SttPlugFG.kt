@@ -21,6 +21,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.widget.NestedScrollView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.MainScope
@@ -37,11 +38,6 @@ import tk.mallumo.cordova.kplug.BottomDialog
 import tk.mallumo.cordova.kplug.dp
 import tk.mallumo.cordova.kplug.fromJson
 import tk.mallumo.cordova.kplug.toJson
-
-
-
-
-
 
 
 @ExperimentalCoroutinesApi
@@ -381,18 +377,22 @@ class SttDialog(
 
 
     private fun LinearLayout.titleTextView(body: TextView.() -> Unit = {}) {
-        addView(TextView(context).apply {
+        addView(NestedScrollView(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     dp(120)
             )
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-            gravity = Gravity.CENTER
-            dp(20).also { dp20 ->
-                setPadding(dp20, 0, dp20, 0)
-            }
-            body(this)
+            addView(TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT)
+//                dp(20).also { dp20 ->
+//                    setPadding(dp20, 0, dp20, 0)
+//                }
+                body(this)
+            })
         })
+
     }
 }
 
@@ -523,6 +523,7 @@ open class SttPlugFG : CordovaPlugin() {
         super.onStop()
     }
 }
+
 
 
 
