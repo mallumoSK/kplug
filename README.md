@@ -203,7 +203,7 @@ permission.listDisabled(function(resp){console.log(resp)})
 ]
 ```
 
-### 4.4 enable single permission
+### 4.4 Enable single permission
 
 **Request**:
 ```js
@@ -224,7 +224,7 @@ permission.enableSingle("android.permission.READ_EXTERNAL_STORAGE",function(resp
 ]
 ```
 
-### 4.5 multiple permissions
+### 4.5 Enable multiple permissions
 
 **Request**:
 ```js
@@ -245,7 +245,7 @@ permission.enableMultiple(["android.permission.RECORD_AUDIO","android.permission
 ]
 ```
 
-### 4.6 enable all project permissions
+### 4.6 Enable all project permissions
 
 **Request**:
 ```js
