@@ -39,7 +39,6 @@ import tk.mallumo.cordova.kplug.dp
 import tk.mallumo.cordova.kplug.fromJson
 import tk.mallumo.cordova.kplug.toJson
 
-
 @ExperimentalCoroutinesApi
 class SttDialog(
         val activity: Activity,
@@ -414,20 +413,21 @@ open class SttPlugFG : CordovaPlugin() {
             callbackContext: CallbackContext?
     ): Boolean {
         try {
-            return when (action) {
+            return if(!cordova.hasPermission("android.permission.RECORD_AUDIO")){
+                callbackContext?.error("require permission: android.permission.RECORD_AUDIO")
+                true
+            } else when (action) {
                 "start" -> {
                     if (SttDialog.isActive()) {
                         callbackContext?.error("Is already Active")
                     } else {
-                        validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
-                            SttDialog(
-                                    activity = cordova.activity,
-                                    callbackContext = callbackContext,
-                                    sttDataHolder = args?.getJSONObject(0)
-                                            ?.fromJson()
-                                            ?: SttDataHolder()
-                            ).show()
-                        }
+                        SttDialog(
+                                activity = cordova.activity,
+                                callbackContext = callbackContext,
+                                sttDataHolder = args?.getJSONObject(0)
+                                        ?.fromJson()
+                                        ?: SttDataHolder()
+                        ).show()
                     }
                     true
                 }
@@ -475,56 +475,8 @@ open class SttPlugFG : CordovaPlugin() {
         }
     }
 
-
-    private val permissionRC = 12548
-
-    private var cordovaTask: (() -> Unit) = { }
-    private var cordovaTaskCallback: CallbackContext? = null
-
-    @Suppress("SameParameterValue")
-    private fun validatePermission(
-            cordovaCallback: CallbackContext?,
-            vararg permissions: String,
-            task: () -> Unit
-    ) {
-        if (permissions.all { cordova.hasPermission(it) }) {
-            task.invoke()
-        } else {
-            cordovaTask = task
-            cordovaTaskCallback = cordovaCallback
-            cordova.requestPermissions(this, permissionRC, permissions)
-        }
-    }
-
-    override fun onRequestPermissionResult(
-            requestCode: Int,
-            permissions: Array<out String>?,
-            grantResults: IntArray?
-    ) {
-        if (requestCode == permissionRC) {
-            if (grantResults?.all { it == PackageManager.PERMISSION_GRANTED } == true) {
-                cordovaTask()
-                cordovaTask = {}
-                cordovaTaskCallback = null
-            } else {
-                cordovaTaskCallback?.sendPluginResult(
-                        PluginResult(PluginResult.Status.ERROR)
-                )
-                cordovaTask = {}
-                cordovaTaskCallback = null
-            }
-        } else {
-            super.onRequestPermissionResult(requestCode, permissions, grantResults)
-        }
-    }
-
     override fun onStop() {
         SttDialog.dismiss()
         super.onStop()
     }
 }
-
-
-
-
-

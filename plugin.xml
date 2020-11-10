@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         id="tk.mallumo.cordova.kplug"
-        version="0.1.4">
+        version="0.1.5">
 
   <name>KPlug</name>
 
@@ -10,6 +10,7 @@
   </engines>
 
   <asset src="www/kplug.js" target="js/kplug.js"/>
+  <asset src="www/permission.js" target="js/permission.js"/>
   <asset src="www/sttPlugBG.js" target="js/sttPlugBG.js"/>
   <asset src="www/sttPlugFG.js" target="js/sttPlugFG.js"/>
 
@@ -23,6 +24,10 @@
   
   <js-module src="www/sttPlugFG.js" name="sttFG">
     <clobbers target="sttFG" />
+  </js-module>
+  
+  <js-module src="www/permission.js" name="permission">
+    <clobbers target="permission" />
   </js-module>
   
   <platform name="android"  kotlin="1.4.10">
@@ -51,6 +56,9 @@
       <feature name="KPlug">
         <param name="android-package" value="tk.mallumo.cordova.kplug.KPlug"/>
       </feature>
+      <feature name="Permission">
+        <param name="android-package" value="tk.mallumo.cordova.kplug.Permission"/>
+      </feature>
       <feature name="SttPlugBG">
         <param name="android-package" value="tk.mallumo.cordova.kplug.stt.SttPlugBG"/>
       </feature>
@@ -62,6 +70,8 @@
     <source-file src="src/android/KPlug.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
     <source-file src="src/android/ext.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
     <source-file src="src/android/BottomDialog.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
+    <!-- -->
+    <source-file src="src/android/Permission.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
     <!-- -->
     <source-file src="src/android/stt/SttPlugBG.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>
     <source-file src="src/android/stt/SttPlugFG.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>

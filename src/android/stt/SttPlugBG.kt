@@ -30,26 +30,23 @@ open class SttPlugBG : CordovaPlugin() {
         callbackContext: CallbackContext?
     ): Boolean {
         try {
-            return when (action) {
+            return if(!cordova.hasPermission("android.permission.RECORD_AUDIO")){
+                callbackContext?.error("require permission: android.permission.RECORD_AUDIO")
+                true
+            } else  return when (action) {
                 "start" -> {
                     registerSttPluginCallback(callbackContext)
-                    validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
-                        sttStart(args?.getJSONObject(0)?.fromJson() ?: SttDataHolder())
-                    }
+                    sttStart(args?.getJSONObject(0)?.fromJson() ?: SttDataHolder())
                     true
                 }
                 "stop" -> {
                     callbackContext?.success()
-                    validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
-                        ServiceSTT.stop()
-                    }
+                    ServiceSTT.stop()
                     true
                 }
                 "stopForce" -> {
                     callbackContext?.success()
-                    validatePermission(callbackContext, "android.permission.RECORD_AUDIO") {
-                        ServiceSTT.stop(true)
-                    }
+                    ServiceSTT.stop(true)
                     true
                 }
                 "greet" -> {
@@ -61,49 +58,6 @@ open class SttPlugBG : CordovaPlugin() {
         } catch (e: Exception) {
             callbackContext?.error(e.message)
             return false
-        }
-    }
-
-
-    private val permissionRC = 12548
-
-    private var cordovaTask: (() -> Unit) = { }
-    private var cordovaTaskCallback: CallbackContext? = null
-
-    @Suppress("SameParameterValue")
-    private fun validatePermission(
-        cordovaCallback: CallbackContext?,
-        vararg permissions: String,
-        task: () -> Unit
-    ) {
-        if (permissions.all { cordova.hasPermission(it) }) {
-            task.invoke()
-        } else {
-            cordovaTask = task
-            cordovaTaskCallback = cordovaCallback
-            cordova.requestPermissions(this, permissionRC, permissions)
-        }
-    }
-
-    override fun onRequestPermissionResult(
-        requestCode: Int,
-        permissions: Array<out String>?,
-        grantResults: IntArray?
-    ) {
-        if (requestCode == permissionRC) {
-            if (grantResults?.all { it == PackageManager.PERMISSION_GRANTED } == true) {
-                cordovaTask()
-                cordovaTask = {}
-                cordovaTaskCallback = null
-            } else {
-                cordovaTaskCallback?.sendPluginResult(
-                    PluginResult(PluginResult.Status.ERROR)
-                )
-                cordovaTask = {}
-                cordovaTaskCallback = null
-            }
-        } else {
-            super.onRequestPermissionResult(requestCode, permissions, grantResults)
         }
     }
 

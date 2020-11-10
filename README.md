@@ -39,7 +39,11 @@ sttBG.greet("World",function(resp){console.log(resp)},function(err){console.log(
 ```
 
 ## 1. Speech to text BG
+
+#### Permission ``android.permission.RECORD_AUDIO`` must be granted before any function is called
+
 Recognition is running on service
+
 ### 1.1. START
 ```js
 sttBG.start({
@@ -57,7 +61,11 @@ sttBG.stopForce()
 ```
 
 ## 2. Speech to text FG
+
 Recognition is running inside dialog
+
+#### Permission ``android.permission.RECORD_AUDIO`` must be granted before any function is called
+
 ### 2.1. START
 ```js
 sttFG.start({
@@ -145,3 +153,115 @@ kplug.schedule({
 kplug.scheduleCancel("some-unique-identifier",function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
+## 4. Permissions
+
+### 4.1 show all permissions used in project
+**Request**:
+```js
+permission.listAll(function(resp){console.log(resp)})
+```
+**Result**:
+```json
+[
+	{
+	"first":"android.permission.ACCESS_NETWORK_STATE", /*name of permission*/
+	"second":true /* permission is or not granted (true/false)*/
+	},	
+	{
+	"first":"android.permission.RECORD_AUDIO", /*name of permission*/
+	"second":true /* permission is or not granted (true/false)*/
+	},	
+	{
+	"first":"android.permission.READ_EXTERNAL_STORAGE",
+	"second":false /* permission is or not granted (true/false)*/
+	},
+]
+```
+
+### 4.2 show enabled permissions used in project
+**Request**:
+```js
+permission.listEnabled(function(resp){console.log(resp)})
+```
+**Result**:
+```json
+[
+"android.permission.ACCESS_NETWORK_STATE",
+"android.permission.RECORD_AUDIO"
+]
+```
+
+### 4.3 show disabled permissions used in project
+**Request**:
+```js
+permission.listDisabled(function(resp){console.log(resp)})
+```
+**Result**:
+```json
+[
+"android.permission.READ_EXTERNAL_STORAGE"
+]
+```
+
+### 4.4 enable single permission
+
+**Request**:
+```js
+permission.enableSingle("android.permission.READ_EXTERNAL_STORAGE",function(resp){console.log(resp)})
+```
+
+**Result is array of REJECTED permissiond**
+
+**Result IF user accept**:
+```json
+[]
+```
+
+**Result IF user reject**:
+```json
+[
+"android.permission.READ_EXTERNAL_STORAGE"
+]
+```
+
+### 4.5 multiple permissions
+
+**Request**:
+```js
+permission.enableMultiple(["android.permission.RECORD_AUDIO","android.permission.READ_EXTERNAL_STORAGE"], function(resp){console.log(resp)})
+```
+
+**Result is array of REJECTED permissions**
+
+**Result IF user accept**:
+```json
+[]
+```
+
+**Result IF user reject**:
+```json
+[
+"android.permission.READ_EXTERNAL_STORAGE"
+]
+```
+
+### 4.6 enable all project permissions
+
+**Request**:
+```js
+permission.enableAll(function(resp){console.log(resp)})
+```
+
+**Result is array of REJECTED permissions**
+
+**Result IF user accept**:
+```json
+[]
+```
+
+**Result IF user reject**:
+```json
+[
+"android.permission.READ_EXTERNAL_STORAGE"
+]
+```
