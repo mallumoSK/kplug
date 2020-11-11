@@ -1,29 +1,29 @@
 package tk.mallumo.cordova.kplug.stt
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioManager
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.text.Html
 import android.text.Spanned
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.widget.NestedScrollView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.PluginResult
@@ -201,12 +201,18 @@ class SttDialog(
             }
 
             bottomDialog.show()
-            flow(closeDialog) { if (it) bottomDialog.dismiss() }
+            flow(closeDialog) {
+                if (it) {
+                    bottomDialog.dismiss()
+                    soundStart()
+                }
+            }
         }
         callbackContext?.sendPluginResult(PluginResult(PluginResult.Status.OK).apply {
             keepCallback = true
         })
         initRecognition()
+        soundStop()
         startRecognization()
         return this
     }
@@ -217,6 +223,43 @@ class SttDialog(
         kotlin.runCatching { recognizer.destroy() }
         initRecognition()
         startRecognization()
+    }
+
+    private val soundStreamType = AudioManager.STREAM_NOTIFICATION
+
+    fun soundStart() {
+        if(sttDataHolder.enableStartStopSound) return
+
+        val app = activity.applicationContext
+        GlobalScope.launch(Dispatchers.Main) {
+            delay(1000)
+            val manager = app.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                if (manager.isStreamMute(soundStreamType)) {
+                    manager.adjustStreamVolume(soundStreamType, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_VIBRATE)
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                manager.setStreamMute(soundStreamType, false)
+            }
+        }
+
+    }
+
+    fun soundStop() {
+        if(sttDataHolder.enableStartStopSound) return
+
+        val manager = activity.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Log.e("soundStop 1", manager.isStreamMute(soundStreamType).toString())
+            if (!manager.isStreamMute(soundStreamType)) {
+
+                manager.adjustStreamVolume(soundStreamType, AudioManager.ADJUST_MUTE, AudioManager.FLAG_VIBRATE)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            manager.setStreamMute(soundStreamType, true)
+        }
     }
 
     private fun startRecognization() {
