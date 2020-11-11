@@ -71,7 +71,7 @@ Recognition is running inside dialog
 sttFG.start({
 	preferOffline: false,
 	autoContinue: true,
-    enableStartStopSound: true, //IF is false, then no beep on start, error, stop, BUT also no sound of incoming notifications, during recognition runtime
+	enableStartStopSound: true//IF is false, then no beep on start, error, stop, BUT also no sound of incoming notifications, during recognition runtime
 	},function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 Parameter **autoContinue** 
