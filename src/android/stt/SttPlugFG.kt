@@ -1,9 +1,7 @@
 package tk.mallumo.cordova.kplug.stt
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -13,14 +11,11 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.text.Html
 import android.text.Spanned
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.widget.NestedScrollView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -125,79 +120,83 @@ class SttDialog(
                 }
 
                 override fun getContentView(): View {
-                    return LinearLayout(activity).apply {
-                        orientation = LinearLayout.VERTICAL
+                    return RelativeLayout(activity).apply {
                         layoutParams = ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 dp(260)
                         )
-                        setBackgroundColor(Color.WHITE)
-                        dp(20).also { dp20 ->
-                            setPadding(0, 0, 0, dp20)
-                        }
-                        titleTextView {
-                            flow(title) { text = it.asHtml() }
-                        }
-
-                        addView(FrameLayout(context).apply {
-                            dp(120).also {
-                                layoutParams = ViewGroup.LayoutParams(it, it)
+                        contentLayout {
+                            titleTextView {
+                                flow(title) { text = it.asHtml() }
                             }
-                            gravity = Gravity.CENTER_HORIZONTAL
-
-                            animView {
-                                flow(animColor) {
-                                    background = GradientDrawable().apply {
-                                        shape = GradientDrawable.OVAL
-                                        color = try {
-                                            ColorStateList.valueOf(Color.parseColor(it))
-                                        } catch (e: Exception) {
-                                            ColorStateList.valueOf(Color.YELLOW)
+                            actionFrame {
+                                animView {
+                                    flow(animColor) {
+                                        background = GradientDrawable().apply {
+                                            shape = GradientDrawable.OVAL
+                                            color = try {
+                                                ColorStateList.valueOf(Color.parseColor(it))
+                                            } catch (e: Exception) {
+                                                ColorStateList.valueOf(Color.YELLOW)
+                                            }
                                         }
                                     }
-                                }
-                                flow(animScale) {
-                                    val factor = if (it <= 0) 1F
-                                    else {
-                                        ((minOf(it, 12F) / 0.12F) / 200F) + 1F
-                                    }
-                                    scaleX = factor
-                                    scaleY = factor
-
-                                }
-                            }
-                            cancelButton {
-                                flow(buttonColor) {
-                                    background = GradientDrawable().apply {
-                                        shape = GradientDrawable.OVAL
-                                        color = try {
-                                            ColorStateList.valueOf(Color.parseColor(it))
-                                        } catch (e: Exception) {
-                                            ColorStateList.valueOf(Color.GREEN)
+                                    flow(animScale) {
+                                        val factor = if (it <= 0) 1F
+                                        else {
+                                            ((minOf(it, 12F) / 0.12F) / 200F) + 1F
                                         }
+                                        scaleX = factor
+                                        scaleY = factor
 
                                     }
                                 }
-                                setOnClickListener {
-                                    sendInfo(
-                                            ServiceSTT.RecognitionInfo(
-                                                    ServiceSTT.RecognitionInfo.State.BUTTON,
-                                                    listOf(recognized),
-                                                    recognized
-                                            )
-                                    )
-                                    sendInfo(
-                                            ServiceSTT.RecognitionInfo(
-                                                    ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
-                                                    listOf(recognized),
-                                                    recognized
-                                            )
-                                    )
-                                    closeDialog()
+                                commitButton {
+                                    flow(buttonColor) {
+                                        background = GradientDrawable().apply {
+                                            shape = GradientDrawable.OVAL
+                                            color = try {
+                                                ColorStateList.valueOf(Color.parseColor(it))
+                                            } catch (e: Exception) {
+                                                ColorStateList.valueOf(Color.GREEN)
+                                            }
+
+                                        }
+                                    }
+                                    setOnClickListener {
+                                        sendInfo(
+                                                ServiceSTT.RecognitionInfo(
+                                                        ServiceSTT.RecognitionInfo.State.BUTTON,
+                                                        listOf(recognized),
+                                                        recognized
+                                                )
+                                        )
+                                        sendInfo(
+                                                ServiceSTT.RecognitionInfo(
+                                                        ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
+                                                        listOf(recognized),
+                                                        recognized
+                                                )
+                                        )
+                                        closeDialog()
+                                    }
                                 }
                             }
-                        })
+                        }
+                        cancelButton {
+                            setOnClickListener {
+                                sendInfo(
+                                        ServiceSTT.RecognitionInfo(
+                                                ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
+                                                listOf(recognized),
+                                                recognized
+                                        )
+                                )
+                                closeDialog()
+                            }
+                        }
                     }
+
                 }
             }
 
@@ -239,6 +238,16 @@ class SttDialog(
         }
     }
 
+    private fun LinearLayout.actionFrame(body: FrameLayout.() -> Unit) {
+        addView(FrameLayout(context).apply {
+            dp(120).also {
+                layoutParams = ViewGroup.LayoutParams(it, it)
+            }
+            gravity = Gravity.CENTER_HORIZONTAL
+            body(this)
+        })
+    }
+
     private fun initRecognition() {
         if (!isClosing) activity.runOnUiThread {
             recognizer = SpeechRecognizer.createSpeechRecognizer(activity).apply {
@@ -251,12 +260,13 @@ class SttDialog(
 
                     override fun onBeginningOfSpeech() {
                     }
+
                     var rmsCounter = 0
                     override fun onRmsChanged(rmsdB: Float) {
-                        rmsCounter+=1
-                        if(rmsCounter>3){
+                        rmsCounter += 1
+                        if (rmsCounter > 3) {
                             animScale.value = rmsdB
-                            rmsCounter= 0
+                            rmsCounter = 0
                         }
 
                     }
@@ -348,51 +358,86 @@ class SttDialog(
     }
 
 
-    private fun FrameLayout.cancelButton(body: ImageView.() -> Unit = {}) {
-        addView(ImageView(context).apply {
-            dp(80).also {
-                layoutParams = FrameLayout.LayoutParams(it, it).apply {
-                    gravity = Gravity.CENTER
-                }
-            }
-            setImageResource(android.R.drawable.ic_btn_speak_now)
-            imageTintList = ColorStateList.valueOf(Color.WHITE)
-            body(this)
-        })
-    }
-
-    private fun FrameLayout.animView(body: View.() -> Unit = {}) {
-        addView(ImageView(context).apply {
-            dp(80).also {
-                layoutParams = FrameLayout.LayoutParams(it, it).apply {
-                    gravity = Gravity.CENTER
-                }
-                pivotX = it.toFloat() / 2F
-                pivotY = it.toFloat() / 2F
+    private fun RelativeLayout.contentLayout(body: LinearLayout.() -> Unit) {
+        addView(LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundColor(Color.WHITE)
+            dp(20).also { dp20 ->
+                setPadding(0, 0, 0, dp20)
             }
             body(this)
         })
     }
+}
+
+private fun RelativeLayout.cancelButton(body: ImageView.() -> Unit) {
+    addView(ImageView(ContextThemeWrapper(context, android.R.style.Widget_Material_Button_Borderless)).apply {
+        layoutParams = RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE)
+        }
+        dp(8).also {
+            setPadding(it, it, it, it)
+        }
+        setBackgroundColor(Color.TRANSPARENT)
+        imageTintList = ColorStateList.valueOf(Color.GRAY)
+        setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
+        body(this)
+    })
+}
+
+private fun FrameLayout.commitButton(body: ImageView.() -> Unit = {}) {
+    addView(ImageView(context).apply {
+        dp(65).also {
+            layoutParams = FrameLayout.LayoutParams(it, it).apply {
+                gravity = Gravity.CENTER
+            }
+        }
+        scaleType = ImageView.ScaleType.CENTER_INSIDE
+        setImageResource(android.R.drawable.ic_btn_speak_now)
+        imageTintList = ColorStateList.valueOf(Color.WHITE)
+        body(this)
+    })
+}
+
+private fun FrameLayout.animView(body: View.() -> Unit = {}) {
+    addView(ImageView(context).apply {
+        dp(80).also {
+            layoutParams = FrameLayout.LayoutParams(it, it).apply {
+                gravity = Gravity.CENTER
+            }
+            pivotX = it.toFloat() / 2F
+            pivotY = it.toFloat() / 2F
+        }
+        body(this)
+    })
+}
 
 
-    private fun LinearLayout.titleTextView(body: TextView.() -> Unit = {}) {
-        addView(NestedScrollView(context).apply {
+private fun LinearLayout.titleTextView(body: TextView.() -> Unit = {}) {
+    addView(NestedScrollView(context).apply {
+        layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(120)
+        )
+        addView(TextView(context).apply {
             layoutParams = LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    dp(120)
-            )
-            addView(TextView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT)
-                dp(20).also { dp20 ->
-                    setPadding(dp20, dp20, dp20, 0)
-                }
-                body(this)
-            })
+                    ViewGroup.LayoutParams.WRAP_CONTENT)
+            gravity = Gravity.CENTER_HORIZONTAL
+            dp(20).also { dp20 ->
+                setPadding(dp20, (dp20.toFloat() * 1.5F).toInt(), dp20, 0)
+            }
+            body(this)
         })
+    })
 
-    }
 }
 
 
@@ -413,7 +458,7 @@ open class SttPlugFG : CordovaPlugin() {
             callbackContext: CallbackContext?
     ): Boolean {
         try {
-            return if(!cordova.hasPermission("android.permission.RECORD_AUDIO")){
+            return if (!cordova.hasPermission("android.permission.RECORD_AUDIO")) {
                 callbackContext?.error("require permission: android.permission.RECORD_AUDIO")
                 true
             } else when (action) {
