@@ -105,6 +105,13 @@ Change color of button background and animation flow
 ```js
 sttFG.color('#009688','#e0f2f1')
 ```
+
+### 2.5. reset recorded text
+**Request**:
+```js
+permission.resetText()
+```
+
 ## 3. Notification scheduler
 ### 3.1 Schedule
 ```js

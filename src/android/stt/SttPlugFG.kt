@@ -82,6 +82,10 @@ class SttDialog(
             instance?.buttonColor?.value = buttonColor
             instance?.animColor?.value = animColor
         }
+
+        fun resetText() {
+            instance?.resetText()
+        }
     }
 
     private fun closeDialog() {
@@ -390,6 +394,11 @@ class SttDialog(
         }
     }
 
+    private fun resetText(){
+        recognized = ""
+        cachedResult = ""
+    }
+
     private fun sendInfo(recognitionInfo: ServiceSTT.RecognitionInfo) {
         callbackContext?.sendPluginResult(
                 PluginResult(
@@ -517,6 +526,10 @@ open class SttPlugFG : CordovaPlugin() {
                                         ?: SttDataHolder()
                         ).show()
                     }
+                    true
+                }
+                "resetText" -> {
+                    SttDialog.resetText()
                     true
                 }
                 "stop" -> {
