@@ -109,7 +109,7 @@ sttFG.color('#009688','#e0f2f1')
 ### 2.5. reset recorded text
 **Request**:
 ```js
-permission.resetText()
+sttFG.resetText()
 ```
 
 ## 3. Notification scheduler
