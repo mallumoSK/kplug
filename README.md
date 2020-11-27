@@ -278,3 +278,24 @@ permission.enableAll(function(resp){console.log(resp)})
 "android.permission.READ_EXTERNAL_STORAGE"
 ]
 ```
+## 5. Sound ON/OFF
+
+**Sound type:**
+* 0 -> SYSTEM
+* 1 -> MUSIC
+* 2 -> ALARM
+* 3 -> NOTIFICATION
+* 4 -> DTMF
+* 5 -> VOICE_CALL
+* 6 -> RING
+* 7 -> ACCESSIBILITY
+
+### 5.1 Mute sound
+```js
+kplug.soundMuteON(0,function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+```
+
+### 5.2 Unmute sound
+```js
+kplug.soundMuteOFF(0,function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+```

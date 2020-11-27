@@ -238,14 +238,14 @@ class SttDialog(
         GlobalScope.launch(Dispatchers.Main) {
             delay(1000)
             val manager = app.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                if (manager.isStreamMute(soundStreamType)) {
-                    manager.adjustStreamVolume(soundStreamType, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_VIBRATE)
-                }
-            } else {
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+//                if (manager.isStreamMute(soundStreamType)) {
+//                    manager.adjustStreamVolume(soundStreamType, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_VIBRATE)
+//                }
+//            } else {
                 @Suppress("DEPRECATION")
                 manager.setStreamMute(soundStreamType, false)
-            }
+//            }
         }
 
     }
@@ -254,16 +254,16 @@ class SttDialog(
         if(sttDataHolder.enableStartStopSound) return
 
         val manager = activity.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Log.e("soundStop 1", manager.isStreamMute(soundStreamType).toString())
-            if (!manager.isStreamMute(soundStreamType)) {
-
-                manager.adjustStreamVolume(soundStreamType, AudioManager.ADJUST_MUTE, AudioManager.FLAG_VIBRATE)
-            }
-        } else {
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+//            Log.e("soundStop 1", manager.isStreamMute(soundStreamType).toString())
+//            if (!manager.isStreamMute(soundStreamType)) {
+//
+//                manager.adjustStreamVolume(soundStreamType, AudioManager.ADJUST_MUTE, AudioManager.FLAG_VIBRATE)
+//            }
+//        } else {
             @Suppress("DEPRECATION")
             manager.setStreamMute(soundStreamType, true)
-        }
+//        }
     }
 
     private fun startRecognization() {

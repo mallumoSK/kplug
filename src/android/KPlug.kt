@@ -9,6 +9,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.media.AudioManager
+import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
@@ -21,14 +23,13 @@ import org.json.JSONArray
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-
 @ExperimentalCoroutinesApi
 open class KPlug : CordovaPlugin() {
 
     override fun execute(
-        action: String?,
-        args: JSONArray?,
-        callbackContext: CallbackContext?
+            action: String?,
+            args: JSONArray?,
+            callbackContext: CallbackContext?
     ): Boolean {
         try {
             return when (action) {
@@ -54,6 +55,12 @@ open class KPlug : CordovaPlugin() {
                     callbackContext?.success()
                     true
                 }
+                "sound" -> {
+                    val mute = args?.getBoolean(0) ?: true
+                    val rawType = args?.getInt(1) ?: 0
+                    changeSound(rawType, mute, callbackContext)
+                    true
+                }
                 else -> false
             }
         } catch (e: Exception) {
@@ -62,8 +69,31 @@ open class KPlug : CordovaPlugin() {
         }
     }
 
+    private fun changeSound(rawType: Int, mute: Boolean, callbackContext: CallbackContext?) {
+        val type = when (rawType) {
+            0 -> AudioManager.STREAM_SYSTEM
+            1 -> AudioManager.STREAM_MUSIC
+            2 -> AudioManager.STREAM_ALARM
+            3 -> AudioManager.STREAM_NOTIFICATION
+            4 -> AudioManager.STREAM_DTMF
+            5 -> AudioManager.STREAM_VOICE_CALL
+            6 -> AudioManager.STREAM_RING
+            else -> {
+                if (rawType == 7 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    AudioManager.STREAM_ACCESSIBILITY
+                } else AudioManager.USE_DEFAULT_STREAM_TYPE
+            }
+        }
 
-
+        try {
+            val manager = cordova.context.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            @Suppress("DEPRECATION")
+            manager.setStreamMute(type, mute)
+            callbackContext?.success()
+        } catch (e: Exception) {
+            callbackContext?.error(e.message)
+        }
+    }
 }
 
 
@@ -76,28 +106,28 @@ class SchedulerWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
 
         fun schedule(ctx: Context, data: SchedulerDataHolder) {
             WorkManager.getInstance(ctx)
-                .enqueueUniqueWork(
-                    data.id,
-                    ExistingWorkPolicy.REPLACE,
-                    OneTimeWorkRequest.Builder(SchedulerWorker::class.java)
-                        .apply {
-                            if (data.time > System.currentTimeMillis() - 5 * 60 * 1000) {
-                                Log.e("delay", (data.time - System.currentTimeMillis()).toString())
-                                setInitialDelay(
-                                    data.time - System.currentTimeMillis(),
-                                    TimeUnit.MILLISECONDS
-                                )
-                            } else {
-                                Log.e("delay", "now")
-                            }
-                        }
-                        .setInputData(
-                            Data.Builder()
-                                .putString("json", data.toJson())
-                                .build()
-                        )
-                        .build()
-                )
+                    .enqueueUniqueWork(
+                            data.id,
+                            ExistingWorkPolicy.REPLACE,
+                            OneTimeWorkRequest.Builder(SchedulerWorker::class.java)
+                                    .apply {
+                                        if (data.time > System.currentTimeMillis() - 5 * 60 * 1000) {
+                                            Log.e("delay", (data.time - System.currentTimeMillis()).toString())
+                                            setInitialDelay(
+                                                    data.time - System.currentTimeMillis(),
+                                                    TimeUnit.MILLISECONDS
+                                            )
+                                        } else {
+                                            Log.e("delay", "now")
+                                        }
+                                    }
+                                    .setInputData(
+                                            Data.Builder()
+                                                    .putString("json", data.toJson())
+                                                    .build()
+                                    )
+                                    .build()
+                    )
         }
     }
 
@@ -105,7 +135,7 @@ class SchedulerWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
     override fun doWork(): Result {
         val data = inputData.getString("json")!!.fromJson<SchedulerDataHolder>()
         val manager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createChannel(manager, data.channel, data.channelImportance)
 
         var defaults = 0
@@ -129,12 +159,12 @@ class SchedulerWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
             }
             data.actions.forEach {
                 addAction(
-                    NotificationCompat.Action.Builder(
-                        it.getImageRes(applicationContext),
-                        it.title,
-                        it.createPI(applicationContext)
-                    )
-                        .build()
+                        NotificationCompat.Action.Builder(
+                                it.getImageRes(applicationContext),
+                                it.title,
+                                it.createPI(applicationContext)
+                        )
+                                .build()
                 )
             }
         }
@@ -144,25 +174,25 @@ class SchedulerWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, para
 
     @SuppressLint("WrongConstant")
     private fun createChannel(
-        manager: NotificationManager,
-        channel: String,
-        channelImportance: Int
+            manager: NotificationManager,
+            channel: String,
+            channelImportance: Int
     ) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val nChannel = manager.getNotificationChannel(channel)
             val recreateChannel =
-                if (nChannel == null || nChannel.importance != channelImportance) {
-                    if (nChannel != null) manager.deleteNotificationChannel(channel)
-                    true
-                } else false
+                    if (nChannel == null || nChannel.importance != channelImportance) {
+                        if (nChannel != null) manager.deleteNotificationChannel(channel)
+                        true
+                    } else false
 
             if (recreateChannel) {
                 manager.createNotificationChannel(
-                    NotificationChannel(
-                        channel,
-                        channel,
-                        channelImportance
-                    )
+                        NotificationChannel(
+                                channel,
+                                channel,
+                                channelImportance
+                        )
                 )
             }
         }
@@ -176,22 +206,22 @@ class KPluginBroadcast : BroadcastReceiver() {
 
     companion object {
         fun getPI(
-            ctx: Context,
-            activityPck: String,
-            activityClass: String,
-            broadcastKey: String,
-            params: Map<String, String>
+                ctx: Context,
+                activityPck: String,
+                activityClass: String,
+                broadcastKey: String,
+                params: Map<String, String>
         ): PendingIntent {
             return PendingIntent.getBroadcast(
-                ctx,
-                atomicRequestCode.getAndIncrement(),
-                Intent(ctx, KPluginBroadcast::class.java).apply {
-                    putExtra("__pck", activityPck)
-                    putExtra("__class", activityClass)
-                    putExtra("__broadcast", broadcastKey)
-                    putExtra("params", bundleOf(*params.map { it.key to it.value }.toTypedArray()))
-                },
-                PendingIntent.FLAG_CANCEL_CURRENT
+                    ctx,
+                    atomicRequestCode.getAndIncrement(),
+                    Intent(ctx, KPluginBroadcast::class.java).apply {
+                        putExtra("__pck", activityPck)
+                        putExtra("__class", activityClass)
+                        putExtra("__broadcast", broadcastKey)
+                        putExtra("params", bundleOf(*params.map { it.key to it.value }.toTypedArray()))
+                    },
+                    PendingIntent.FLAG_CANCEL_CURRENT
             )
         }
     }
@@ -229,22 +259,22 @@ class KPluginBroadcast : BroadcastReceiver() {
 }
 
 data class SchedulerDataHolder(
-    var id: String = System.currentTimeMillis().toString(),
-    var channel: String = "default",
-    var channelImportance: Int = 3,//NotificationManager.IMPORTANCE_DEFAULT,
-    var priority: Int = NotificationCompat.PRIORITY_MAX,
-    var img: String = "",
-    var title: String = "",
-    var subtitle: String = "",
+        var id: String = System.currentTimeMillis().toString(),
+        var channel: String = "default",
+        var channelImportance: Int = 3,//NotificationManager.IMPORTANCE_DEFAULT,
+        var priority: Int = NotificationCompat.PRIORITY_MAX,
+        var img: String = "",
+        var title: String = "",
+        var subtitle: String = "",
 
-    var color: String = "",
-    var vibrate: Boolean = true,
-    var sound: Boolean = true,
-    var led: Boolean = true,
-    var time: Long = System.currentTimeMillis(),
+        var color: String = "",
+        var vibrate: Boolean = true,
+        var sound: Boolean = true,
+        var led: Boolean = true,
+        var time: Long = System.currentTimeMillis(),
 
-    var contentAction: Action = Action(),
-    var actions: List<Action> = listOf()
+        var contentAction: Action = Action(),
+        var actions: List<Action> = listOf()
 ) {
     fun getImageRes(ctx: Context): Int {
         val parts = img.split(".")
@@ -259,12 +289,12 @@ data class SchedulerDataHolder(
     }
 
     data class Action(
-        var activityPck: String = "",
-        var activityClass: String = "",
-        var broadcastKey: String = "kplug-default",
-        var img: String = "",
-        var title: String = "action",
-        var params: Map<String, String> = mapOf()
+            var activityPck: String = "",
+            var activityClass: String = "",
+            var broadcastKey: String = "kplug-default",
+            var img: String = "",
+            var title: String = "action",
+            var params: Map<String, String> = mapOf()
     ) {
 
         fun createPI(ctx: Context): PendingIntent? {

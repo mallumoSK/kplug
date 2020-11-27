@@ -12,3 +12,11 @@ module.exports.schedule = function (data, successCallback, errorCallback) {
 module.exports.scheduleCancel = function (id, successCallback, errorCallback) {
         cordova.exec(successCallback, errorCallback, "KPlug", "scheduleCancel", [id]);
 }
+
+module.exports.soundMuteON = function (type, successCallback, errorCallback) {
+        cordova.exec(successCallback, errorCallback, "SttPlugFG", "sound", [true, type]);
+}
+
+module.exports.soundMuteOFF = function (type, successCallback, errorCallback) {
+        cordova.exec(successCallback, errorCallback, "SttPlugFG", "sound", [false, type]);
+}
