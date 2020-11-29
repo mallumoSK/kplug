@@ -98,7 +98,7 @@ class SttDialog(
 
         sendInfo(
             ServiceSTT.RecognitionInfo(
-                ServiceSTT.RecognitionInfo.State.DESTROYED,
+                ServiceSTT.RecognitionInfo.State.DESTROYED
             )
         )
     }

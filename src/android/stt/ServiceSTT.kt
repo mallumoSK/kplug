@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ServiceSTT : Service() {
 
     private lateinit var recognizer: SpeechRecognizer

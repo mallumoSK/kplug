@@ -74,7 +74,7 @@ data class LocationRequest(
         /**
          * Indicates whether the provider is allowed to incur monetary cost
          */
-        val costAllowed: Boolean = false,
+        val costAllowed: Boolean = false
 )
 
 val LocationRequest.criteria: Criteria

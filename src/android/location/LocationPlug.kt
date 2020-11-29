@@ -59,7 +59,7 @@ open class LocationPlug : CordovaPlugin() {
                 "start" -> {
                     val json = args?.getString(0) ?: "{}"
                     if (hasLocationPermission()) {
-                        if (LocationService.start(context = cordova.context, json.fromJson())) {
+                        if (LocationService.start( cordova.context, json.fromJson())) {
                             callbackContext?.success()
                         } else {
                             callbackContext?.error("Location service already running")
