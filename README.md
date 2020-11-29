@@ -469,6 +469,6 @@ Remove all stored locations by identifier.
 
 ```js
 loc.clear(identifier: "xyz",
-		function(resp){console.log(resp)},
+	function(resp){console.log(resp)},
     	function(err){console.log("error:xxx ->" + err)})
 ```
