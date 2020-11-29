@@ -13,6 +13,7 @@
   <asset src="www/permission.js" target="js/permission.js"/>
   <asset src="www/sttPlugBG.js" target="js/sttPlugBG.js"/>
   <asset src="www/sttPlugFG.js" target="js/sttPlugFG.js"/>
+  <asset src="www/location.js" target="js/location.js"/>
 
   <js-module src="www/kplug.js" name="kplug">
     <clobbers target="kplug" />
@@ -30,15 +31,23 @@
     <clobbers target="permission" />
   </js-module>
   
+    <js-module src="www/location.js" name="location">
+    <clobbers target="location" />
+  </js-module>
+  
   <platform name="android"  kotlin="1.4.10">
         
     <config-file target="AndroidManifest.xml" parent="/*">
        <uses-permission android:name="android.permission.INTERNET" />
        <uses-permission android:name="android.permission.RECORD_AUDIO" />
        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+       <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+       <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     </config-file> 
     
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
+       
+       <service android:name="tk.mallumo.cordova.kplug.location.LocationService"/>
        
        <service android:name="tk.mallumo.cordova.kplug.stt.ServiceSTT"/>
        
@@ -65,6 +74,9 @@
       <feature name="SttPlugFG">
         <param name="android-package" value="tk.mallumo.cordova.kplug.stt.SttPlugFG"/>
       </feature>
+      <feature name="LocationPlug">
+        <param name="android-package" value="tk.mallumo.cordova.kplug.location.LocationPlug"/>
+      </feature>
     </config-file>
     
     <source-file src="src/android/KPlug.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/"/>
@@ -77,6 +89,13 @@
     <source-file src="src/android/stt/SttPlugFG.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>
     <source-file src="src/android/stt/ServiceSTT.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>
     <source-file src="src/android/stt/SttDataHolder.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/stt/"/>
+    <!-- -->
+    <source-file src="src/android/location/LocationDatabase.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
+    <source-file src="src/android/location/LocationListenerCallback.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
+    <source-file src="src/android/location/LocationPlug.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
+    <source-file src="src/android/location/LocationRequest.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
+    <source-file src="src/android/location/LocationResponse.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
+    <source-file src="src/android/location/LocationService.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
     
     <framework src="kplug.gradle" custom="true" type="gradleReference" />
   </platform>
