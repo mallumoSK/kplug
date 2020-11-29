@@ -309,13 +309,13 @@ kplug.soundMuteOFF(0,function(resp){console.log(resp)},function(err){console.log
 start with default parameters
 
 ```js
-location.start({},function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+loc.start({},function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
 ### 6.1.1 Start with all parameters
 
 ```js
-location.start({
+loc.start({
 	identifier: "unique GPS start call ID xyz",
 	minTimeMS: 10000,
 	minDistanceM: 0,
@@ -412,7 +412,7 @@ data class LocationRequest(
 Recieve location updates
 
 ```js
-location.callback(function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+loc.callback(function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
 Location response object
@@ -443,20 +443,20 @@ data class LocationResponse(
 Stop location listener and unregister callback 
 
 ```js
-location.stop(function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
+loc.stop(function(resp){console.log(resp)},function(err){console.log("error:xxx ->" + err)})
 ```
 
 ### 6.4 Location query
 
 Retrive location possitions by 
-* identifier -> unique id used in start call ``location.start({identifier: "xyz"}, {}, {})``
+* identifier -> unique id used in start call ``loc.start({identifier: "xyz"}, {}, {})``
 * offset -> query offset of location results
 * limit -> max query length
 
-Response is array of response objests same as ``location.callback`` response
+Response is array of response objests same as ``loc.callback`` response
 
 ```js
-location.query(identifier: "xyz",
+loc.query(identifier: "xyz",
 				offset: 0, 
 				limit: 1000,
                 function(resp){console.log(resp)},
@@ -468,7 +468,7 @@ location.query(identifier: "xyz",
 Remove all stored locations by identifier.
 
 ```js
-location.clear(identifier: "xyz",
+loc.clear(identifier: "xyz",
                 function(resp){console.log(resp)},
                 function(err){console.log("error:xxx ->" + err)})
 ```
