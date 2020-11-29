@@ -457,10 +457,10 @@ Response is array of response objests same as ``loc.callback`` response
 
 ```js
 loc.query(identifier: "xyz",
-				offset: 0, 
-				limit: 1000,
-                function(resp){console.log(resp)},
-                function(err){console.log("error:xxx ->" + err)})
+	offset: 0, 
+	limit: 1000,
+    function(resp){console.log(resp)},
+    function(err){console.log("error:xxx ->" + err)})
 ```
 
 ### 6.5 CleanUP
@@ -469,6 +469,6 @@ Remove all stored locations by identifier.
 
 ```js
 loc.clear(identifier: "xyz",
-                function(resp){console.log(resp)},
-                function(err){console.log("error:xxx ->" + err)})
+	function(resp){console.log(resp)},
+    function(err){console.log("error:xxx ->" + err)})
 ```
