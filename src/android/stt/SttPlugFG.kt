@@ -115,8 +115,8 @@ class SttDialog(
                     sendInfo(
                         ServiceSTT.RecognitionInfo(
                             ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
-                            listOf(recognized),
-                            recognized
+                            listOf(trimResultText(recognized)),
+                            trimResultText(recognized)
                         )
                     )
                     closeDialog()
@@ -170,15 +170,15 @@ class SttDialog(
                                         sendInfo(
                                             ServiceSTT.RecognitionInfo(
                                                 ServiceSTT.RecognitionInfo.State.BUTTON,
-                                                listOf(recognized),
-                                                recognized
+                                                listOf( trimResultText(recognized)),
+                                                trimResultText(recognized)
                                             )
                                         )
                                         sendInfo(
                                             ServiceSTT.RecognitionInfo(
                                                 ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
-                                                listOf(recognized),
-                                                recognized
+                                                listOf( trimResultText(recognized)),
+                                                trimResultText(recognized)
                                             )
                                         )
                                         closeDialog()
@@ -191,8 +191,8 @@ class SttDialog(
                                 sendInfo(
                                     ServiceSTT.RecognitionInfo(
                                         ServiceSTT.RecognitionInfo.State.RESULT_FINAL,
-                                        listOf(recognized),
-                                        recognized
+                                        listOf( trimResultText(recognized)),
+                                        trimResultText(recognized)
                                     )
                                 )
                                 closeDialog()
@@ -354,8 +354,8 @@ class SttDialog(
                         sendInfo(
                             ServiceSTT.RecognitionInfo(
                                 state,
-                                listOf(out),
-                                out
+                                listOf(trimResultText(out)),
+                                trimResultText(out)
                             )
                         )
 
@@ -370,16 +370,6 @@ class SttDialog(
                     private fun extractResultsRecognition(results: Bundle?): String {
                         return (results?.getStringArrayList("results_recognition")?.first() ?: "")
                             .let { "$cachedResult $it".trim() }
-                            .let {
-                                when {
-                                    trimIndexCachedResultText == 0 -> it
-                                    trimIndexCachedResultText <= it.length -> {
-                                        it.substring(trimIndexCachedResultText, it.length)
-                                    }
-                                    else -> ""
-
-                                }
-                            }
                     }
 
                     override fun onPartialResults(partialResults: Bundle?) {
@@ -388,7 +378,7 @@ class SttDialog(
                         sendInfo(
                             ServiceSTT.RecognitionInfo(
                                 ServiceSTT.RecognitionInfo.State.RESULT_PARTIAL,
-                                listOf(out),
+                                listOf(trimResultText(out)),
                                 extractPartialResultsRecognition(partialResults)
                             )
                         )
@@ -408,13 +398,22 @@ class SttDialog(
         }
     }
 
+    private fun trimResultText(textFull: String): String {
+       return when {
+            trimIndexCachedResultText == 0 -> textFull
+            trimIndexCachedResultText <= textFull.length -> {
+                return textFull.substring(trimIndexCachedResultText, textFull.length)
+            }
+            else -> ""
+        }
+    }
+
     var trimIndexCachedResultText = 0
 
     private fun resetText() {
         trimIndexCachedResultText =
-            if (cachedResult.isNotEmpty()) cachedResult.length - 1
+            if (recognized.isNotEmpty()) recognized.length - 1
             else 0
-        recognized = ""
     }
 
     private fun sendInfo(recognitionInfo: ServiceSTT.RecognitionInfo) {
