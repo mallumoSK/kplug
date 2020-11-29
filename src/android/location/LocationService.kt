@@ -21,7 +21,7 @@ import tk.mallumo.cordova.kplug.toJson
 class LocationService : Service() {
 
     private var manager: LocationManager? = null
-    private val request: LocationRequest? = null
+    private var request: LocationRequest? = null
     private lateinit var stopScope: CoroutineScope
 
     private val locationListener = LocationListenerCallback {
@@ -145,6 +145,7 @@ class LocationService : Service() {
     }
 
     private fun start(request: LocationRequest) {
+        this.request = request
         manager?.requestLocationUpdates(
             request.minTimeMS,
             request.minDistanceM.toFloat(),

@@ -1,6 +1,6 @@
 {
   "name": "kplug",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Bunch of cordova utils",
   "cordova": {
     "id": "kplug",

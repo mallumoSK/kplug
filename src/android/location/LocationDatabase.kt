@@ -49,7 +49,7 @@ IDENTIFIER TEXT NOT NULL DEFAULT (''))
 SELECT JSON 
 FROM LOCATION 
 WHERE IDENTIFIER = '$identifier' 
-LIMIT $limit, OFFSET $offset
+LIMIT $limit OFFSET $offset
 """, null)
 
         val response = arrayListOf<LocationResponse>()
