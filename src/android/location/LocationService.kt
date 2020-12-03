@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
 import kotlinx.coroutines.*
@@ -32,7 +33,7 @@ class LocationService : Service() {
 
     companion object {
         private val _lastLocation =
-                MutableStateFlow(LocationResponse(state = LocationResponse.State.IDLE))
+            MutableStateFlow(LocationResponse(state = LocationResponse.State.IDLE))
         val lastLocation: Flow<LocationResponse> get() = _lastLocation
 
         private val _isRunning = MutableStateFlow(false)
@@ -95,13 +96,17 @@ class LocationService : Service() {
         location.identifier = request?.identifier ?: ""
         _lastLocation.value = location
         saveLocation(location)
+        if (!request?.url.isNullOrEmpty()) {
+            Log.e("UPLOAD", "SCHEDULE")
+            LocationUploader.exec(this)
+        }
     }
 
 
     private fun saveLocation(location: LocationResponse) {
         request?.also {
             LocationDatabase.get(context = applicationContext)
-                    .insert(location, it.identifier)
+                .insert(location, it.identifier, it.url, it.dataPrefix)
         }
 
     }
@@ -132,11 +137,11 @@ class LocationService : Service() {
             getSystemService(NotificationManager::class.java)!!.also { manager ->
                 if (manager.notificationChannels.none { it.id == id }) {
                     manager.createNotificationChannel(
-                            NotificationChannel(
-                                    id,
-                                    id,
-                                    NotificationManager.IMPORTANCE_MIN
-                            )
+                        NotificationChannel(
+                            id,
+                            id,
+                            NotificationManager.IMPORTANCE_MIN
+                        )
                     )
                 }
 
@@ -148,11 +153,11 @@ class LocationService : Service() {
     private fun start(request: LocationRequest) {
         this.request = request
         manager?.requestLocationUpdates(
-                request.minTimeMS,
-                request.minDistanceM.toFloat(),
-                request.criteria,
-                locationListener,
-                mainLooper
+            request.minTimeMS,
+            request.minDistanceM.toFloat(),
+            request.criteria,
+            locationListener,
+            mainLooper
         )
 
         stopScope = MainScope()

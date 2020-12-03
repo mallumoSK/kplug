@@ -16,4 +16,5 @@ dependencies {
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.0'
     implementation 'com.google.android.material:material:1.2.1'
+    implementation "tk.mallumo:http:2.1.1"
 }

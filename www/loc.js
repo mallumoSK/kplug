@@ -20,3 +20,7 @@ module.exports.query = function (identifier, offset, limit, successCallback, err
 module.exports.clear = function (identifier, successCallback, errorCallback) {
         cordova.exec(successCallback, errorCallback, "LocationPlug", "clear", [identifier]);
 }
+
+module.exports.last = function (successCallback, errorCallback) {
+        cordova.exec(successCallback, errorCallback, "LocationPlug", "last", [0]);
+}

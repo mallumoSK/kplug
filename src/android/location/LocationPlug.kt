@@ -31,9 +31,13 @@ open class LocationPlug : CordovaPlugin() {
         scope = MainScope()
         scope.launch(Dispatchers.Main) {
             LocationService.lastLocation.collect {
-                pendingCallback?.sendPluginResult(PluginResult(PluginResult.Status.OK, JSONObject(it.toJson())).apply {
-                    keepCallback = true
-                })
+                pendingCallback?.sendPluginResult(
+                    PluginResult(
+                        PluginResult.Status.OK,
+                        JSONObject(it.toJson())
+                    ).apply {
+                        keepCallback = true
+                    })
             }
         }
     }
@@ -51,9 +55,9 @@ open class LocationPlug : CordovaPlugin() {
     }
 
     override fun execute(
-            action: String?,
-            args: JSONArray?,
-            callbackContext: CallbackContext?
+        action: String?,
+        args: JSONArray?,
+        callbackContext: CallbackContext?
     ): Boolean {
         try {
             return when (action) {
@@ -66,11 +70,13 @@ open class LocationPlug : CordovaPlugin() {
                             callbackContext?.error("Location service already running")
                         }
                     } else {
-                        callbackContext?.error("""
+                        callbackContext?.error(
+                            """
                             Location service require permissions:
                             android.permission.ACCESS_FINE_LOCATION
                             android.permission.ACCESS_COARSE_LOCATION
-                        """.trimIndent())
+                        """.trimIndent()
+                        )
                     }
                     true
                 }
@@ -86,21 +92,22 @@ open class LocationPlug : CordovaPlugin() {
                 }
                 "last" -> {
                     LocationDatabase.get(cordova.context)
-                            .last()
-                            .also { item ->
-                                if (item != null) {
-                                    callbackContext?.success(JSONObject(item.toJson()))
-                                } else {
-                                    callbackContext?.error("NO GPS POSITION")
-                                }
+                        .last()
+                        .also { item ->
+                            if (item != null) {
+                                callbackContext?.success(JSONObject(item.toJson()))
+                            } else {
+                                callbackContext?.error("NO GPS POSITION")
                             }
+                        }
                     true
                 }
                 "query" -> {
                     val identifier = args?.getString(0) ?: ""
                     val offset = args?.getInt(1) ?: 0
                     val limit = args?.getInt(2) ?: 1000
-                    val items = LocationDatabase.get(cordova.context).query(offset, limit, identifier)
+                    val items =
+                        LocationDatabase.get(cordova.context).query(offset, limit, identifier)
                     callbackContext?.success(JSONArray(items.toJson()))
                     true
                 }
