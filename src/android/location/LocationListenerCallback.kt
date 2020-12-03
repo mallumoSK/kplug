@@ -1,14 +1,15 @@
 package tk.mallumo.cordova.kplug.location
 
+import android.content.Context
 import android.location.Location
 import android.location.LocationListener
 import android.os.Bundle
 
-class LocationListenerCallback(val onNewLocationEntry: (newLocationEntry: LocationResponse) -> Unit) : LocationListener {
+class LocationListenerCallback(val context: Context, val onNewLocationEntry: (newLocationEntry: LocationResponse) -> Unit) : LocationListener {
 
     override fun onLocationChanged(location: Location?) {
         if (location != null) {
-            onNewLocationEntry(location.ofLocationResponse(LocationResponse.State.NEW_LOCATION))
+            onNewLocationEntry(location.ofLocationResponse(context, LocationResponse.State.NEW_LOCATION))
         }
     }
 

@@ -24,14 +24,15 @@ class LocationService : Service() {
     private var request: LocationRequest? = null
     private lateinit var stopScope: CoroutineScope
 
-    private val locationListener = LocationListenerCallback {
-        consumeLocation(it)
+    private val locationListener by lazy {
+        LocationListenerCallback(this) {
+            consumeLocation(it)
+        }
     }
-
 
     companion object {
         private val _lastLocation =
-            MutableStateFlow(LocationResponse(state = LocationResponse.State.IDLE))
+                MutableStateFlow(LocationResponse(state = LocationResponse.State.IDLE))
         val lastLocation: Flow<LocationResponse> get() = _lastLocation
 
         private val _isRunning = MutableStateFlow(false)
@@ -100,7 +101,7 @@ class LocationService : Service() {
     private fun saveLocation(location: LocationResponse) {
         request?.also {
             LocationDatabase.get(context = applicationContext)
-                .insert(location, it.identifier)
+                    .insert(location, it.identifier)
         }
 
     }
@@ -131,11 +132,11 @@ class LocationService : Service() {
             getSystemService(NotificationManager::class.java)!!.also { manager ->
                 if (manager.notificationChannels.none { it.id == id }) {
                     manager.createNotificationChannel(
-                        NotificationChannel(
-                            id,
-                            id,
-                            NotificationManager.IMPORTANCE_MIN
-                        )
+                            NotificationChannel(
+                                    id,
+                                    id,
+                                    NotificationManager.IMPORTANCE_MIN
+                            )
                     )
                 }
 
@@ -147,11 +148,11 @@ class LocationService : Service() {
     private fun start(request: LocationRequest) {
         this.request = request
         manager?.requestLocationUpdates(
-            request.minTimeMS,
-            request.minDistanceM.toFloat(),
-            request.criteria,
-            locationListener,
-            mainLooper
+                request.minTimeMS,
+                request.minDistanceM.toFloat(),
+                request.criteria,
+                locationListener,
+                mainLooper
         )
 
         stopScope = MainScope()
