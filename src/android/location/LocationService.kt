@@ -97,7 +97,6 @@ class LocationService : Service() {
         _lastLocation.value = location
         saveLocation(location)
         if (!request?.url.isNullOrEmpty()) {
-            Log.e("UPLOAD", "SCHEDULE")
             LocationUploader.exec(this)
         }
     }

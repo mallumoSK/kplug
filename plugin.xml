@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         id="tk.mallumo.cordova.kplug"
-        version="0.2.0">
+        version="0.2.1">
 
   <name>KPlug</name>
 
@@ -97,7 +97,8 @@
     <source-file src="src/android/location/LocationRequest.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
     <source-file src="src/android/location/LocationResponse.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
     <source-file src="src/android/location/LocationService.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
-    
+    <source-file src="src/android/location/LocationUploader.kt" target-dir="src/main/kotlin/tk/mallumo/cordova/kplug/location/"/>
+    <!-- -->
     <framework src="kplug.gradle" custom="true" type="gradleReference" />
   </platform>
 </plugin>
