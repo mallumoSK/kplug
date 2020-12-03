@@ -29,8 +29,12 @@ class LocationDatabase private constructor(context: Context) : Closeable {
 CREATE TABLE IF NOT EXISTS "LOCATION" (
 ID INTEGER PRIMARY KEY AUTOINCREMENT,
 JSON TEXT NOT NULL DEFAULT (''),
-IDENTIFIER TEXT NOT NULL DEFAULT (''))
+IDENTIFIER TEXT NOT NULL DEFAULT (''),
+UPLOAD_COMPLETE INTEGER NOT NULL DEFAULT (0))
 """)
+        sqlite.runCatching {
+            execSQL("""ALTER TABLE "LOCATION" ADD COLUMN UPLOAD_COMPLETE INTEGER DEFAULT 0""")
+        }
     }
 
     fun insert(locationResponse: LocationResponse, identifier: String) {
@@ -40,18 +44,30 @@ IDENTIFIER TEXT NOT NULL DEFAULT (''))
                         "IDENTIFIER" to identifier))
     }
 
-    fun clear(identifier:String){
+    fun clear(identifier: String) {
         sqlite.delete("LOCATION", "IDENTIFIER = '$identifier'", null)
     }
 
     fun query(offset: Int, limit: Int, identifier: String): List<LocationResponse> {
-        val cursor = sqlite.rawQuery("""
+        return queryExec("""
 SELECT JSON 
 FROM LOCATION 
 WHERE IDENTIFIER = '$identifier' 
 LIMIT $limit OFFSET $offset
-""", null)
+""")
+    }
 
+    fun last(): LocationResponse? {
+        return queryExec("""
+SELECT JSON 
+FROM LOCATION
+ORDER BY ID DESC
+LIMIT 1
+""").firstOrNull()
+    }
+
+    private fun queryExec(sql: String): List<LocationResponse> {
+        val cursor = sqlite.rawQuery(sql, null)
         val response = arrayListOf<LocationResponse>()
         val gson = Gson()
         while (cursor.moveToNext()) {

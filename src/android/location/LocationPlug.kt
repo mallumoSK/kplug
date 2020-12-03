@@ -23,9 +23,9 @@ open class LocationPlug : CordovaPlugin() {
         pendingCallback?.sendPluginResult(PluginResult(PluginResult.Status.OK).apply {
             keepCallback = true
         })
-        if(::scope.isInitialized){
+        if (::scope.isInitialized) {
             scope.runCatching {
-               cancel()
+                cancel()
             }
         }
         scope = MainScope()
@@ -37,12 +37,13 @@ open class LocationPlug : CordovaPlugin() {
             }
         }
     }
+
     private fun unregisterPluginCallback() {
         pendingCallback?.sendPluginResult(PluginResult(PluginResult.Status.OK).apply {
             keepCallback = false
         })
         pendingCallback = null
-        if(::scope.isInitialized) {
+        if (::scope.isInitialized) {
             scope.runCatching {
                 cancel()
             }
@@ -59,12 +60,12 @@ open class LocationPlug : CordovaPlugin() {
                 "start" -> {
                     val json = args?.getString(0) ?: "{}"
                     if (hasLocationPermission()) {
-                        if (LocationService.start( cordova.context, json.fromJson())) {
+                        if (LocationService.start(cordova.context, json.fromJson())) {
                             callbackContext?.success()
                         } else {
                             callbackContext?.error("Location service already running")
                         }
-                    }else{
+                    } else {
                         callbackContext?.error("""
                             Location service require permissions:
                             android.permission.ACCESS_FINE_LOCATION
@@ -73,17 +74,29 @@ open class LocationPlug : CordovaPlugin() {
                     }
                     true
                 }
-                "callback" ->{
+                "callback" -> {
                     registerPluginCallback(callbackContext)
                     true
                 }
-                "stop" ->{
+                "stop" -> {
                     LocationService.stop()
                     unregisterPluginCallback()
                     callbackContext?.success()
                     true
                 }
-                "query" ->{
+                "last" -> {
+                    LocationDatabase.get(cordova.context)
+                            .last()
+                            .also { item ->
+                                if (item != null) {
+                                    callbackContext?.success(JSONObject(item.toJson()))
+                                } else {
+                                    callbackContext?.error("NO GPS POSITION")
+                                }
+                            }
+                    true
+                }
+                "query" -> {
                     val identifier = args?.getString(0) ?: ""
                     val offset = args?.getInt(1) ?: 0
                     val limit = args?.getInt(2) ?: 1000
@@ -91,7 +104,7 @@ open class LocationPlug : CordovaPlugin() {
                     callbackContext?.success(JSONArray(items.toJson()))
                     true
                 }
-                "clear" ->{
+                "clear" -> {
                     val identifier = args?.getString(0) ?: ""
                     LocationDatabase.get(cordova.context).clear(identifier)
                     callbackContext?.success()

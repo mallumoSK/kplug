@@ -463,7 +463,17 @@ loc.query(identifier: "xyz",
     	function(err){console.log("error:xxx ->" + err)})
 ```
 
-### 6.5 CleanUP
+### 6.5 Last location
+
+Response is last hnown location
+
+```js
+loc.last(
+    	function(resp){console.log(resp)}, // succes
+    	function(err){console.log("error:xxx ->" + err)}) // no location in database
+```
+
+### 6.6 CleanUP
 
 Remove all stored locations by identifier.
 
