@@ -498,3 +498,42 @@ loc.clear(identifier: "xyz",
 	function(resp){console.log(resp)},
     	function(err){console.log("error:xxx ->" + err)})
 ```
+
+### 6.7 isEnabled
+
+**Request:**
+```js
+loc.isEnabled(function (resp){console.log(resp)})
+```
+
+**Response:**
+```kotlin
+data class LocationInfoState(
+    val gps: Boolean,
+    val network: Boolean,
+    val passive: Boolean
+)
+```
+
+### 6.8 enable
+
+
+**Request:**
+```js
+// HIGH_ACCURACY -> 0
+// BALANCED_POWER_ACCURACY -> 1
+// LOW_POWER -> 2
+// NO_POWER -> 3
+loc.enable(0,
+	function(resp){console.log(resp)},
+    	function(err){console.log("error:xxx ->" + err)})
+```
+
+**Response:**
+```kotlin
+data class LocationInfoState(
+    val gps: Boolean,
+    val network: Boolean,
+    val passive: Boolean
+)
+```

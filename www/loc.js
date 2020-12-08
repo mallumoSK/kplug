@@ -24,3 +24,11 @@ module.exports.clear = function (identifier, successCallback, errorCallback) {
 module.exports.last = function (successCallback, errorCallback) {
         cordova.exec(successCallback, errorCallback, "LocationPlug", "last", [0]);
 }
+
+module.exports.isEnabled = function (successCallback) {
+        cordova.exec(successCallback, function(err){}, "LocationPlug", "isEnabled", [0]);
+}
+
+module.exports.enable = function (priority, successCallback, errorCallback) {
+        cordova.exec(successCallback, errorCallback, "LocationPlug", "enable", [priority]);
+}
