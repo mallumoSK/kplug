@@ -44,9 +44,11 @@ class LocationUploader(ctx: Context, params: WorkerParameters) : CoroutineWorker
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun makeRequest(url: String): Boolean =
-        http.post<String>(url, mapOf<String, String>()).let {
+    private suspend fun makeRequest(url: String): Boolean {
+        Log.e("Upload location", url)
+        return http.post<String>(url, mapOf<String, String>()).let {
             it.exception?.printStackTrace()
             it.code == 200
         }
+    }
 }

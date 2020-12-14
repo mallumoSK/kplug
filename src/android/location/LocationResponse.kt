@@ -37,12 +37,12 @@ data class LocationResponse(
 
 fun LocationResponse.buildUploadLink(prefix: String) = buildString {
     append(prefix)
-    if (provider == "fused") {
-        append("F")
-    } else {
-        append(provider)
-    }
-    append(",${lat.d6}")
+//    if (provider == "fused") {
+//        append("F")
+//    } else {
+//        append(provider)
+//    }
+    append(lat.d6)
     append(",${lon.d6}")
     append(",${serverStringDT(dt)}")
     append(",$wifi")
